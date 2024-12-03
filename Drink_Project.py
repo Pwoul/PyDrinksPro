@@ -1,77 +1,162 @@
+from enum import Enum  # Import Enum to create enumerators
+import unittest  # Import the unittest module for testing
+
+# defines enumerators for drink sizes.
+class Size(Enum):
+    SMALL = "small"
+    MEDIUM = "medium"
+    LARGE = "large"
+    MEGA = "mega"
+
+# defines enumerators for drink bases.
+class Base(Enum):
+    WATER = "water"
+    SPRITE = "sprite"
+    POKEACOLA = "pokecola"
+    MR_SALT = "Mr. Salt"
+    HILL_FOG = "hill fog"
+    LEAF_WINE = "leaf wine"
+
+# define enumerators for drink flavors.
+class Flavor(Enum):
+    LEMON = "lemon"
+    CHERRY = "cherry"
+    STRAWBERRY = "strawberry"
+    MINT = "mint"
+    BLUEBERRY = "blueberry"
+    LIME = "lime"
+
 class Drink:
-    #List of valid bases and flavors for the drinks.
-    _valid_bases = {"water", "sprite", "pokecola", "Mr.Salt", "hill fog", "leaf wine"}
-    _valid_flavors = {"lemon", "cherry", "strawberry", "mint", "blueberry", "line"}
+    """Represents a drink with a base, size, and flavors."""
     
-    def __init__(self):
-        #initializing a drink without base and an empty list of flavors.
-        self._base = None
-        self._flavors = set()
-        
+    # list of valid bases and flavors for the drinks.
+    _valid_bases = {base for base in Base}  
+    _valid_flavors = {flavor for flavor in Flavor}
+    _size_costs = {
+        Size.SMALL: 1.50,
+        Size.MEDIUM: 1.75,
+        Size.LARGE: 2.05,
+        Size.MEGA: 2.15
+    }
+
+    def __init__(self, base: Base, size: Size):
+        """Initializes a drink with a base and size, and an empty set of flavors."""
+        self._base = base  # sets a base for the drink.
+        self._size = size  # sets a size for the drink.
+        self._flavors = set()  # initializes an empty set for flavors.
+        self._cost = self._size_costs[size]  # sets the initial cost based on size.
+
     def get_base(self):
-        return self._base  #returns the drink base.
-    
+        """returns the base of the drink."""
+        return self._base
+
     def get_flavors(self):
-        return list(self._flavors)  #returns flavors that are added to the drink.
-    
+        """returns a list of flavors added to the drink."""
+        return list(self._flavors)
+
     def get_num_flavors(self):
-        return len(self._flavors)  #returns the number of different flavors added to the drink.
-    
-    def set_base(self, base):
-        if base in self._valid_bases:  #validates if a given base is valid.
-            self._base = base  #sets the base if valid.
-        else:
-            #raises an error if the base isn't valid.
-            raise ValueError(f"pick a proper base from {self._valid_bases}.")  
-        
-    def add_flavor(self, flavor):
-        #checks and adds flavor if flavor is included in the list of flavors.
-        if flavor in self._valid_flavors:
-            self._flavors.add(flavor)
-        else:
-            #raises an error if a given flover isn't included in the list.
-            raise ValueError(f"pick a proper flavor from {self._valid_flavors}.")
-        
-    def set_flavors(self, flavors):
-        #sets multiple flavers at once making sure they are all valid/included in the list of flavors.
-        for flavor in flavors:  #iterates through the given flavors.
-            if flavor not in self._valid_flavors:
-                #raises an error if a given flover isn't included in the list.
-                raise ValueError(f"pick a proper flavor from {self._valid_flavors}.")
-        self._flavors = set(flavors)  #updates the flovers set with the new valid flavors.
-        
-class Order:
-    def __init__(self):
-        self._items = []  #stores the drinks in order.
-        
-    def get_items(self):
-        return self._items  #returns the list of drinks in an order.
-    
+        """returns the number of different flavors added to the drink."""
+        return len(self._flavors)
+
     def get_total(self):
-        return len(self._items)  #returns and counts the items in an order.
+        """returns the total cost of the drink."""
+        return self._cost
+
+    def add_flavor(self, flavor: Flavor):
+        """adds a flavor to the drink if it's valid and not already added."""
+        if flavor in self._valid_flavors:  # checks if the flavor is valid.
+            if flavor not in self._flavors:  # checks if the flavor is already added.
+                self._cost += 0.15  # increases the cost for each new flavor.
+            self._flavors.add(flavor)  # adds the flavor to the set
+        else:
+            raise ValueError(f"Pick a proper flavor from {self._valid_flavors}.")
+
+    def set_flavors(self, flavors):
+        """sets multiple flavors at once, ensuring they are valid."""
+        for flavor in flavors:  # iterates through the provided flavors.
+            if flavor not in self._valid_flavors:  
+                raise ValueError(f"Pick a proper flavor from {self._valid_flavors}.")
+        self._flavors = set(flavors)  # updates the flavors set with the new valid flavors.
+
+class Order:
+    """represents an order containing multiple drinks."""
     
+    _tax_rate = 0.0725 
+
+    def __init__(self):
+        """initializes an empty order with no drinks."""
+        self._items = [] 
+
+    def get_items(self):
+        """returns the list of drinks in the order."""
+        return self._items
+
+    def get_total(self):
+        """returns the total cost of all drinks in the order."""
+        return sum(drink.get_total() for drink in self._items)  #calculates the total cost of all drinks.
+
+    def get_num_items(self):
+        """returns the number of drinks in the order."""
+        return len(self._items)  # counts of items in the order.
+
+    def get_tax(self):
+        """calculates the tax based on the total cost of the order."""
+        return self.get_total() * self._tax_rate  # calculates tax based on total.
+
     def get_receipt(self):
-        receipt = "your order receipt:\n"  #generates reciept.
-        for i, drink in enumerate(self._items):  #loops through each drnks in an the order.
-            base = drink.get_base()  #gets the drink base.
-            flavors = ", ".join(drink.get_flavors())  #get flavors and add to the string.
-            #adds the drnks detail to the receipt and returns the receipt.
-            receipt += f"{i + 1}: base - {base}, flavors - {flavors}\n"
-        return receipt
-    
+        """generates a receipt for the order."""
+        receipt_data = {
+            "number_drinks": self.get_num_items(),
+            "drinks": [],  # a list to hold the drink details.
+            "subtotal": self.get_total(),  # total cost before tax.
+            "tax": self.get_tax(),  # tax amount.
+            "grand_total": self.get_total() + self.get_tax()  # total cost including taxes.
+        }
+
+        for drink in self._items:  # loops through each drink in the order.
+            drink_data = {
+                "base": drink.get_base().value, 
+                "size": drink._size.value, 
+                "flavors": [flavor.value for flavor in drink.get_flavors()],  # list of flavors.
+                "total_cost": drink.get_total() 
+            }
+            receipt_data["drinks"].append(drink_data)  # adds the drink details to the receipt.
+        return receipt_data
+
     def add_item(self, drink):
-        if isinstance(drink, Drink):  #checks if a drink instace
-            self._items.append(drink)  #adds drink to the order.
+        """adds a drink to the order."""
+        if isinstance(drink, Drink):  # checks if the item is a Drink instance.
+            self._items.append(drink)  # adds the drink to the order.
         else:
-            #raises an error if the item added isn't a drink.
-            raise ValueError("you can only get drinks from this order")
-        
-    def remove_item(self, index): #removes the drink from the order by its index.
-        if 0 <= index < len(self._items):  #checks if index is valid.
-            self._items.pop(index)  #removes the drink from a given index.
+            raise ValueError("You can only add drinks to this order.")
+
+    def remove_item(self, index):  # removes a drink from the order by its index.
+        """removes a drink from the order by its index."""
+        if 0 <= index < len(self._items):  # checks if the index is valid.
+            self._items.pop(index)  # removes the drink at the specified index.
         else:
-            #raises an error if index is not valid.
-            raise IndexError("Invalid, can not remove")
+            raise IndexError("Invalid index, cannot remove item.")  # raises an error if index is invalid.
+
+# Unit tests for the Drink and Order classes
+class TestDrinkOrder(unittest.TestCase):
+    """Test cases for the Drink and Order classes."""
+
+    def test_drink_creation(self):
+        """Test creating a drink with valid base and size."""
+        drink = Drink(Base.WATER, Size.SMALL)  # creates a drink.
+        self.assertEqual(drink.get_base(), Base.WATER)  # checks if the base is correct.
+        self.assertEqual(drink.get_total(), 1.50)  # checks if the initial cost is correct.
+
+    def test_order_creation(self):
+        """Test creating an order and adding drinks."""
+        order = Order()  # creates a new order.
+        drink = Drink(Base.WATER, Size.SMALL)  # creates a drink.
+        order.add_item(drink)  # adds the drink to the order.
+        self.assertEqual(order.get_num_items(), 1)  # checks if the number of items is correct.
+        self.assertEqual(order.get_total(), 1.50)  # checks if the total cost is correct.
+
+if __name__ == '__main__':
+    unittest.main()
         
         
         
