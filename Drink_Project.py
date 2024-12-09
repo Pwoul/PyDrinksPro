@@ -78,6 +78,61 @@ class Drink:
                 raise ValueError(f"Pick a proper flavor from {self._valid_flavors}.")
         self._flavors = set(flavors)  # updates the flavors set with the new valid flavors.
 
+class Food:
+    #defines food.
+    _food_price = {
+        "hotdog": 2.30,
+        "corndog": 2.00,
+        "ice_cream": 3.00,
+        "onion_rings": 1.75,
+        "french_fries": 1.50,
+        "tater_tots": 1.70,
+        "nacho_chips": 1.90
+    }
+    
+    #defines toppings.
+    _topping_price = {
+        "cheery": 0.00,
+        "whipped_cream": 0.00,
+        "caramel_sauce:": 0.50,
+        "chocolate_sauce": 0.50,
+        "nacho_cheese": 0.30,
+        "chili": 0.60,
+        "bacon_bits": 0.30,
+        "ketchup": 0.00,
+        "mustard": 0.00
+    }
+    
+    def __init__(self, food_type):
+       if food_type.lower() not in self._food_price:
+           raise ValueError(f"Invalid food type.")
+       self._type = food_type.lower
+       self._toppings = set()
+       self._base_price = self._food_price[self._type]
+    
+    #Accessor for the base price
+    def get_base_price(self):
+        return self._base_price
+    
+    #Accessor for food type.
+    def get_type(self):
+        return self._type
+    
+    #adds toppings.
+    def add_topping(self, topping):
+        if topping.lower() not in self._topping_price:
+            raise ValueError(f"Invalid topping")
+        self._toppings.add(topping.lower())
+    
+    #counts the number of toppings.   
+    def get_num_toppings(self):
+        return list(self._toppings)
+    
+    def get_total_price(self):
+        toppings_cost = sum(self._topping_price[topping] for topping in self._toppings)
+        return self._base_price + toppings_cost
+    
+    
 class Order:
     """represents an order containing multiple drinks."""
     
@@ -123,12 +178,12 @@ class Order:
             receipt_data["drinks"].append(drink_data)  # adds the drink details to the receipt.
         return receipt_data
 
-    def add_item(self, drink):
+    def add_item(self, item):
         """adds a drink to the order."""
-        if isinstance(drink, Drink):  # checks if the item is a Drink instance.
-            self._items.append(drink)  # adds the drink to the order.
+        if isinstance(item, (Drink, Food)):  # checks if the item is a Drink instance.
+            self._items.append(item)  # adds the drink to the order.
         else:
-            raise ValueError("You can only add drinks to this order.")
+            raise ValueError("You can only add drinks or food to this order.")
 
     def remove_item(self, index):  # removes a drink from the order by its index.
         """removes a drink from the order by its index."""
@@ -156,7 +211,7 @@ class TestDrinkOrder(unittest.TestCase):
         self.assertEqual(order.get_total(), 1.50)  # checks if the total cost is correct.
 
 if __name__ == '__main__':
-    unittest.main()
+   unittest.main()        
         
         
         
