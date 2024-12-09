@@ -202,13 +202,12 @@ class TestDrinkOrder(unittest.TestCase):
         self.assertEqual(drink.get_base(), Base.WATER)  # checks if the base is correct.
         self.assertEqual(drink.get_total(), 1.50)  # checks if the initial cost is correct.
 
-    def test_order_creation(self):
-        """Test creating an order and adding drinks."""
-        order = Order()  # creates a new order.
+    def test_add_flavor(self):
+        """Test adding a flavor to a drink."""
         drink = Drink(Base.WATER, Size.SMALL)  # creates a drink.
-        order.add_item(drink)  # adds the drink to the order.
-        self.assertEqual(order.get_num_items(), 1)  # checks if the number of items is correct.
-        self.assertEqual(order.get_total(), 1.50)  # checks if the total cost is correct.
+        drink.add_flavor(Flavor.LEMON)  # adds a flavor.
+        self.assertIn(Flavor.LEMON, drink.get_flavors())  # checks if the flavor was added.
+
 
 if __name__ == '__main__':
    unittest.main()        
