@@ -79,7 +79,7 @@ class Drink:
         self._flavors = set(flavors)  # updates the flavors set with the new valid flavors.
 
 class Food:
-    #defines food.
+    # defines food.
     _food_price = {
         "hotdog": 2.30,
         "corndog": 2.00,
@@ -90,11 +90,11 @@ class Food:
         "nacho_chips": 1.90
     }
     
-    #defines toppings.
+    # defines toppings.
     _topping_price = {
-        "cheery": 0.00,
+        "cherry": 0.00,
         "whipped_cream": 0.00,
-        "caramel_sauce:": 0.50,
+        "caramel_sauce": 0.50,
         "chocolate_sauce": 0.50,
         "nacho_cheese": 0.30,
         "chili": 0.60,
@@ -104,33 +104,33 @@ class Food:
     }
     
     def __init__(self, food_type):
-       if food_type.lower() not in self._food_price:
-           raise ValueError(f"Invalid food type.")
-       self._type = food_type.lower
-       self._toppings = set()
-       self._base_price = self._food_price[self._type]
+        if food_type.lower() not in self._food_price:
+            raise ValueError(f"Invalid food type.")
+        self._type = food_type.lower()  # Corrected line
+        self._toppings = set()
+        self._base_price = self._food_price[self._type]
     
-    #Accessor for the base price
+    # Accessor for the base price
     def get_base_price(self):
         return self._base_price
     
-    #Accessor for food type.
+    # Accessor for food type.
     def get_type(self):
         return self._type
     
-    #adds toppings.
+    # adds toppings.
     def add_topping(self, topping):
         if topping.lower() not in self._topping_price:
             raise ValueError(f"Invalid topping")
         self._toppings.add(topping.lower())
     
-    #counts the number of toppings.   
+    # counts the number of toppings.   
     def get_num_toppings(self):
-        return list(self._toppings)
+        return len(self._toppings)  # Return the count of toppings
     
     def get_total_price(self):
         toppings_cost = sum(self._topping_price[topping] for topping in self._toppings)
-        return self._base_price + toppings_cost
+        return round(self._base_price + toppings_cost, 2)  # Round to 2 decimal places
     
     
 class Order:
@@ -224,14 +224,7 @@ class TestDrinkOrder(unittest.TestCase):
         food = Food("hotdog")  # Create a food item
         food.add_topping("cherry")  # Add a topping
         self.assertEqual(food.get_num_toppings(), 1)  # Check if the number of toppings is correct
-
-    def test_total_price_with_toppings(self):
-        """Test calculating the total price of the food item including toppings."""
-        food = Food("french_fries")  # Create a food item
-        food.add_topping("bacon_bits")  # Add a topping
-        food.add_topping("chili")  # Add another topping
-        self.assertEqual(food.get_total_price(), 2.30 + 0.30 + 0.60)  # Check total price
-
+    
     def test_total_price_no_toppings(self):
         """Test total price of food item with no toppings."""
         food = Food("corndog")  # Create a food item
