@@ -208,6 +208,34 @@ class TestDrinkOrder(unittest.TestCase):
         drink.add_flavor(Flavor.LEMON)  # adds a flavor.
         self.assertIn(Flavor.LEMON, drink.get_flavors())  # checks if the flavor was added.
 
+    def test_food_creation(self):
+        """Test creating a food item with a valid type."""
+        food = Food("hotdog")  # Create a food item
+        self.assertEqual(food.get_type(), "hotdog")  # Check if the type is correct
+        self.assertEqual(food.get_base_price(), 2.30)  # Check if the base price is correct
+
+    def test_invalid_food_creation(self):
+        """Test creating a food item with an invalid type."""
+        with self.assertRaises(ValueError):
+            Food("invalid_food")  # Should raise a ValueError
+
+    def test_add_topping(self):
+        """Test adding a valid topping to the food item."""
+        food = Food("hotdog")  # Create a food item
+        food.add_topping("cherry")  # Add a topping
+        self.assertEqual(food.get_num_toppings(), 1)  # Check if the number of toppings is correct
+
+    def test_total_price_with_toppings(self):
+        """Test calculating the total price of the food item including toppings."""
+        food = Food("french_fries")  # Create a food item
+        food.add_topping("bacon_bits")  # Add a topping
+        food.add_topping("chili")  # Add another topping
+        self.assertEqual(food.get_total_price(), 2.30 + 0.30 + 0.60)  # Check total price
+
+    def test_total_price_no_toppings(self):
+        """Test total price of food item with no toppings."""
+        food = Food("corndog")  # Create a food item
+
 
 if __name__ == '__main__':
    unittest.main()        
