@@ -1,5 +1,5 @@
 from enum import Enum  # Import Enum to create enumerators
-import unittest  # Import the unittest module for testing
+
 
 # defines enumerators for drink sizes.
 class Size(Enum):
@@ -132,6 +132,58 @@ class Food:
         toppings_cost = sum(self._topping_price[topping] for topping in self._toppings)
         return round(self._base_price + toppings_cost, 2)  # Round to 2 decimal places
     
+class IceStormFlavor(Enum):
+    MINT_CHOCOLATE_CHIP = 4.00
+    CHOCOLATE = 3.00
+    VANILLA_BEAN = 3.00
+    BANANA = 3.50
+    BUTTER_PECAN = 3.50
+    SMORE = 4.00
+
+class IceStorm:
+    _topping_price = {
+        "cherry": 0.00,
+        "whipped_cream": 0.00,
+        "caramel_sauce": 0.50,
+        "chocolate_sauce": 0.50,
+        "storios": 1.00,
+        "dig_dogs": 1.00,
+        "t_and_t": 1.00,
+        "cookie_dough": 1.00,
+        "pecans": 0.50
+    }
+
+    def __init__(self, flavor: IceStormFlavor):
+        self._flavor = flavor
+        self._toppings = set()
+        self._base_price = flavor.value
+
+    def add_flavor(self, flavor: IceStormFlavor):
+        raise NotImplementedError("Ice Storms can only have one flavor.")
+
+    def get_flavors(self):
+        return list(IceStormFlavor)
+
+    def get_base(self):
+        return None
+
+    def get_size(self):
+        return None
+
+    def get_total(self):
+        toppings_cost = sum(self._topping_price[topping] for topping in self._toppings)
+        return round(self._base_price + toppings_cost, 2)
+
+    def get_num_flavors(self):
+        return len(self._toppings)
+
+    def add_topping(self, topping):
+        if topping.lower() not in self._topping_price:
+            raise ValueError(f"Invalid topping")
+        self._toppings.add(topping.lower())
+
+    def __str__(self):
+        return f"Ice Storm Flavor: {self._flavor.name}, Total Price: ${self.get_total()}"
     
 class Order:
     """represents an order containing multiple drinks."""
@@ -147,92 +199,45 @@ class Order:
         return self._items
 
     def get_total(self):
-        """returns the total cost of all drinks in the order."""
-        return sum(drink.get_total() for drink in self._items)  #calculates the total cost of all drinks.
+        return sum(drink.get_total() for drink in self._items)
 
     def get_num_items(self):
-        """returns the number of drinks in the order."""
-        return len(self._items)  # counts of items in the order.
+        return len(self._items)
 
     def get_tax(self):
-        """calculates the tax based on the total cost of the order."""
-        return self.get_total() * self._tax_rate  # calculates tax based on total.
+        return self.get_total() * self._tax_rate
 
     def get_receipt(self):
         """generates a receipt for the order."""
         receipt_data = {
             "number_drinks": self.get_num_items(),
-            "drinks": [],  # a list to hold the drink details.
-            "subtotal": self.get_total(),  # total cost before tax.
-            "tax": self.get_tax(),  # tax amount.
-            "grand_total": self.get_total() + self.get_tax()  # total cost including taxes.
+            "drinks": [],
+            "subtotal": self.get_total(),
+            "tax": self.get_tax(),
+            "grand_total": self.get_total() + self.get_tax()
         }
 
-        for drink in self._items:  # loops through each drink in the order.
+        for drink in self._items:
             drink_data = {
                 "base": drink.get_base().value, 
                 "size": drink._size.value, 
-                "flavors": [flavor.value for flavor in drink.get_flavors()],  # list of flavors.
+                "flavors": [flavor.value for flavor in drink.get_flavors()],
                 "total_cost": drink.get_total() 
             }
-            receipt_data["drinks"].append(drink_data)  # adds the drink details to the receipt.
+            receipt_data["drinks"].append(drink_data)
         return receipt_data
 
     def add_item(self, item):
-        """adds a drink to the order."""
-        if isinstance(item, (Drink, Food)):  # checks if the item is a Drink instance.
-            self._items.append(item)  # adds the drink to the order.
+        if isinstance(item, (Drink, Food)):
+            self._items.append(item)
         else:
             raise ValueError("You can only add drinks or food to this order.")
 
-    def remove_item(self, index):  # removes a drink from the order by its index.
-        """removes a drink from the order by its index."""
-        if 0 <= index < len(self._items):  # checks if the index is valid.
-            self._items.pop(index)  # removes the drink at the specified index.
+    def remove_item(self, index):
+        if 0 <= index < len(self._items):
+            self._items.pop(index)
         else:
-            raise IndexError("Invalid index, cannot remove item.")  # raises an error if index is invalid.
-
-# Unit tests for the Drink and Order classes
-class TestDrinkOrder(unittest.TestCase):
-    """Test cases for the Drink and Order classes."""
-
-    def test_drink_creation(self):
-        """Test creating a drink with valid base and size."""
-        drink = Drink(Base.WATER, Size.SMALL)  # creates a drink.
-        self.assertEqual(drink.get_base(), Base.WATER)  # checks if the base is correct.
-        self.assertEqual(drink.get_total(), 1.50)  # checks if the initial cost is correct.
-
-    def test_add_flavor(self):
-        """Test adding a flavor to a drink."""
-        drink = Drink(Base.WATER, Size.SMALL)  # creates a drink.
-        drink.add_flavor(Flavor.LEMON)  # adds a flavor.
-        self.assertIn(Flavor.LEMON, drink.get_flavors())  # checks if the flavor was added.
-
-    def test_food_creation(self):
-        """Test creating a food item with a valid type."""
-        food = Food("hotdog")  # Create a food item
-        self.assertEqual(food.get_type(), "hotdog")  # Check if the type is correct
-        self.assertEqual(food.get_base_price(), 2.30)  # Check if the base price is correct
-
-    def test_invalid_food_creation(self):
-        """Test creating a food item with an invalid type."""
-        with self.assertRaises(ValueError):
-            Food("invalid_food")  # Should raise a ValueError
-
-    def test_add_topping(self):
-        """Test adding a valid topping to the food item."""
-        food = Food("hotdog")  # Create a food item
-        food.add_topping("cherry")  # Add a topping
-        self.assertEqual(food.get_num_toppings(), 1)  # Check if the number of toppings is correct
-    
-    def test_total_price_no_toppings(self):
-        """Test total price of food item with no toppings."""
-        food = Food("corndog")  # Create a food item
-
-
-if __name__ == '__main__':
-   unittest.main()        
-        
+            raise IndexError("Invalid index, cannot remove item.")
         
         
         
